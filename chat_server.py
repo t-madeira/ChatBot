@@ -42,7 +42,7 @@ list_of_clients = []
 
 def clientthread(conn, addr):
     # sends a message to the client whose user object is conn
-    conn.send("Welcome to this chatroom!".encode())
+    # conn.send("Welcome to this chatroom!".encode())
 
     while True:
         try:

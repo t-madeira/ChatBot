@@ -61,8 +61,8 @@ def clean(sentences):
     return words
 
 def clean_sentence (sentence, nlp):
-    nltk.download("stopwords")
-    nltk.download("punkt") # Preciso ver novamente o que isso faz
+    # nltk.download("stopwords")
+    # nltk.download("punkt") # Preciso ver novamente o que isso faz
     sw = stopwords.words('portuguese') + list(punctuation)
 
     sentence = re.sub(r'[^ a-z A-Z 0-9]', " ", sentence)  # Misterioso, porem necessario

@@ -4,9 +4,10 @@ import select
 import sys 
   
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-IP_address = "172.18.135.225"
+IP_address = "172.18.135.225"#172.18.135.225"
 Port = 8081
-server.connect((IP_address, Port)) 
+server.connect((IP_address, Port))
+print("****TELA DO USUARIO****")
   
 while True:
     # maintains a list of possible input streams 
@@ -25,12 +26,12 @@ while True:
     for socks in read_sockets: 
         if socks == server: 
             message = socks.recv(2048) 
-            print (message.decode())
+            print ("Bot: " + message.decode()[17:])
         else: 
             message = sys.stdin.readline()
             server.send(message.encode())
-            sys.stdout.write("<You>") 
-            sys.stdout.write(message)
+            # sys.stdout.write("<You>")
+            # sys.stdout.write(message)
             sys.stdout.flush()
 
 server.close() 
