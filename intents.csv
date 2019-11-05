@@ -1,0 +1,38 @@
+sentence,intent
+"Beleza, brother?",cumprimento
+Boa noite,cumprimento
+Boa tarde,cumprimento
+Bom dia,cumprimento
+E ai!,cumprimento
+"Fala ai, cara!",cumprimento
+"Oi, boa noite",cumprimento
+"Oi, boa tarde",cumprimento
+"Oi, bom dia",cumprimento
+"Oi, tudo bem?",cumprimento
+"Oi, tudo bom?",cumprimento
+Oi!,cumprimento
+"Ola, como vai voce?",cumprimento
+Ola!,cumprimento
+Opa!,cumprimento
+Qual e?,cumprimento
+Ate,despedida
+Ate a proxima,despedida
+Ate mais,despedida
+Boa noite,despedida
+Boa tarde,despedida
+Bom dia,despedida
+Tchau,despedida
+"Tchau, boa noite",despedida
+"Tchau, boa tarde",despedida
+"Tchau, bom dia",despedida
+Quero tentar,ajuda
+Preciso de ajuda,ajuda
+ajuda,ajuda
+td bom,cumprimento
+hey,cumprimento
+ajuad,ajuda
+qro ajuda,ajuda
+qro ajda,ajuda
+oi tudo bem com vc amigo? como vc esta?,cumprimento
+thiago,nome
+koe,cumprimento
