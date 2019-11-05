@@ -35,6 +35,9 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 from random import randrange
 
+from bs4 import BeautifulSoup
+import requests
+
 def create_tokenizer(words, filters = '!"#$%&()*+,-./:;<=>?@[\]^_`{|}~'):
   token = Tokenizer(filters = filters)
   token.fit_on_texts(words)
@@ -211,3 +214,38 @@ def answer(_class):
         df_answers = df_answers.sort_values(by=[_class], ascending=False)
         str = df_answers.iloc[randrange(len(df_answers[_class]))][_class]
     return str
+
+
+
+
+def getPage(url):
+    request = urllib.request.Request(url)
+    request.add_header('Accept-encoding', 'gzip')
+    request.add_header('User-Agent','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.20 (KHTML, like Gecko) Chrome/19.0.1036.7 Safari/535.20')
+    response = urllib3.urlopen(request)
+    if response.info().get('Content-Encoding') == 'gzip':
+        buf = StringIO( response.read())
+        f = gzip.GzipFile(fileobj=buf)
+        data = f.read()
+    else:
+        data = response.read()
+    return data
+
+
+
+def didYouMean(message):
+    url = "https://www.google.com/search?q=" + message
+    req = requests.get (url)
+    if req.status_code == 200:
+        content = req.content
+    soup = BeautifulSoup(content, 'html.parser')
+    full_text = soup.get_text()
+    begin = full_text.find("Exibindo resultados para")
+    if begin > 0:
+        full_text = full_text[begin:]
+        end = full_text.find("(")
+        print(full_text[25:end])
+        print (message + " corrigido para: " + full_text[25:end])
+        message = full_text[25:end]
+        return message
+    return message

@@ -76,6 +76,7 @@ while True:
             if not train_mode:
                 message_received = socks.recv(2048)
                 message_received = message_received.decode()[17:]
+                message_received = bot_functions.didYouMean(message_received)
                 message_to_send = ""
                 try:
                     intent = bot_functions.predict_intent(message_received, nlp, biggest_sentence, model)
@@ -91,10 +92,8 @@ while True:
                 message_intent = message_received
                 bot_functions.save_msg(message_to_save[:-1], message_intent[:-1]) #[:-1] tirar o \n
                 model, biggest_sentence = bot_functions.train_model(nlp)
-                message_to_send = "Certo, entendi! Obrigado por contribuir com o meu treinamento! :)"
+                message_to_send = "Certo, entendi! Obrigado por contribuir com o meu treinamento! :)\n"
                 train_mode = False
-
-
 
             print("\nUsuario enviou: " + message_received)
             server.send(message_to_send.encode())
