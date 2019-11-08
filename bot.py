@@ -30,7 +30,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, LSTM, Bidirectional, Embedding, Dropout
 from keras.callbacks import ModelCheckpoint
 
-from sklearn.model_selection import train_test_split
+
 
 import bot_functions
 
@@ -43,26 +43,16 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 IP_address = "172.18.135.225"
 Port = 8081
 server.connect((IP_address, Port))
+print("teste")
 
 # Carregando modelo do portugues, isso demora pra cacete
 nlp = spacy.load('pt_core_news_sm')
+print("teste")
 
 #
 df_answers = pd.read_csv('answers.csv')
 
 model, biggest_sentence = bot_functions.train_model(nlp)
-
-# Validacao
-# predito = model.predict(val_X)
-# print("Frase\t\t\tValor predito\t\tValor esperado")
-# contador = 0
-# for i in range (len(val_Y)):
-#     if predito[i] == val_Y[i]:
-#         print (str(val_X[i])+"\t\t"+predito[i]+"\t\t\t"+str(val_Y[i])+ ' '+ u'\u2713')
-#         contador += 1
-#     else:
-#         print (str(val_X[i])+"\t\t"+predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
-# print ("acc: ", contador/len(val_Y))
 
 print("****TELA DO BOT****")
 
@@ -76,16 +66,19 @@ while True:
             if not train_mode:
                 message_received = socks.recv(2048)
                 message_received = message_received.decode()[17:]
-                message_received = bot_functions.didYouMean(message_received)
-                message_to_send = ""
                 try:
                     intent = bot_functions.predict_intent(message_received, nlp, biggest_sentence, model)
                     message_to_send = bot_functions.answer(intent[0])
                 except ValueError:
-                    intent = ['desconhecido']
-                    message_to_save = message_received
-                    message_to_send += bot_functions.user_train()
-                    train_mode = True
+                    message_received = bot_functions.didYouMean(message_received)
+                    try:
+                        intent = bot_functions.predict_intent(message_received, nlp, biggest_sentence, model)
+                        message_to_send = bot_functions.answer(intent[0])
+                    except ValueError:
+                        intent = ['desconhecido']
+                        message_to_save = message_received
+                        message_to_send = bot_functions.user_train()
+                        train_mode = True
             else:
                 message_received = socks.recv(2048)
                 message_received = message_received.decode()[17:]

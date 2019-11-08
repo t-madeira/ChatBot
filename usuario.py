@@ -26,7 +26,7 @@ while True:
     for socks in read_sockets: 
         if socks == server: 
             message = socks.recv(2048) 
-            print ("Bot: " + message.decode()[17:])
+            print ("Bot: " + message.decode()[17:] + "\n")
         else: 
             message = sys.stdin.readline()
             server.send(message.encode())

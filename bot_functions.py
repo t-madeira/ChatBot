@@ -12,6 +12,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
+from sklearn.model_selection import train_test_split
+
 from string import punctuation
 
 import numpy as np
@@ -32,6 +34,8 @@ from keras.callbacks import ModelCheckpoint
 
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
 
 from random import randrange
 
@@ -205,6 +209,81 @@ def train_model(nlp):
     # 7. Treina o modelo
     model = DecisionTreeClassifier()
     model.fit(data[0], data[1])
+
+    step = 0
+    acc_arvore = 0
+    acc_gaussiano = 0
+    acc_knn = 0
+    acc_svm = 0
+    while step < 15:
+        # Validacao
+        model2 = DecisionTreeClassifier()
+        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
+        model2.fit(X_train, y_train)
+        predito = model2.predict(X_test)
+        print("Frase\t\t\tValor predito\t\tValor esperado")
+        contador = 0
+        for i in range(len(val_Y)):
+            if predito[i] == val_Y[i]:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                contador += 1
+            else:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+        acc_arvore += contador / len(val_Y)
+        print("acc arvore de decisao: ", acc_arvore)
+
+        # Validacao
+        model2 = GaussianNB()
+        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
+        model2.fit(X_train, y_train)
+        predito = model2.predict(X_test)
+        print("Frase\t\t\tValor predito\t\tValor esperado")
+        contador = 0
+        for i in range(len(val_Y)):
+            if predito[i] == val_Y[i]:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                contador += 1
+            else:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+        acc_gaussiano += contador / len(val_Y)
+        print("acc gaussiano: ", acc_gaussiano)
+
+        # Validacao
+        model2 = KNeighborsClassifier(n_neighbors=3)
+        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
+        model2.fit(X_train, y_train)
+        predito = model2.predict(X_test)
+        print("Frase\t\t\tValor predito\t\tValor esperado")
+        contador = 0
+        for i in range(len(val_Y)):
+            if predito[i] == val_Y[i]:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                contador += 1
+            else:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+        acc_knn += contador / len(val_Y)
+        print("acc knn: ", acc_knn)
+
+        # Validacao
+        model2 = svm.SVC(gamma='scale')
+        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
+        model2.fit(X_train, y_train)
+        predito = model2.predict(X_test)
+        print("Frase\t\t\tValor predito\t\tValor esperado")
+        contador = 0
+        for i in range(len(val_Y)):
+            if predito[i] == val_Y[i]:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                contador += 1
+            else:
+                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+        acc_svm += contador / len(val_Y)
+        print("acc knn: ", acc_svm)
+        step +=1
+    print("arvore: ", acc_arvore/15)
+    print("gaussiano: ", acc_gaussiano / 15)
+    print(acc_knn / 15)
+    print(acc_svm / 15)
 
     return model, biggest_sentence
 
