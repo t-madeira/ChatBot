@@ -43,11 +43,12 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 IP_address = "172.18.135.225"
 Port = 8081
 server.connect((IP_address, Port))
-print("teste")
+
 
 # Carregando modelo do portugues, isso demora pra cacete
+print("Carregando modelo em portugues do spacy...", end="")
 nlp = spacy.load('pt_core_news_sm')
-print("teste")
+print("pronto!")
 
 #
 df_answers = pd.read_csv('answers.csv')
@@ -83,6 +84,7 @@ while True:
                 message_received = socks.recv(2048)
                 message_received = message_received.decode()[17:]
                 message_intent = message_received
+
                 bot_functions.save_msg(message_to_save[:-1], message_intent[:-1]) #[:-1] tirar o \n
                 model, biggest_sentence = bot_functions.train_model(nlp)
                 message_to_send = "Certo, entendi! Obrigado por contribuir com o meu treinamento! :)\n"

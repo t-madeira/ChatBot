@@ -97,7 +97,7 @@ def clean_sentence (sentence, nlp):
 
     return sentence
 
-def mapping_and_cleanning(sentences, nlp):
+def mapping_and_cleanning_1_x_1(sentences, nlp):
     cleanned_sentences = []
     df_mapping = pd.read_csv('mapping.csv')
 
@@ -156,6 +156,8 @@ def predict_intent(message, nlp, biggest_sentence, model):
         message.append(0)
     message = np.array(message)
     intent = model.predict(message.reshape(1, -1))
+
+    print("intent: ", intent)
     return intent
 
 def user_train():
@@ -184,7 +186,7 @@ def train_model(nlp):
     # unique_intent = list(set(intent))
 
     # 2. Mapeia as palavras da base e retorna sentencas tratadas
-    df_mapping, sentences = mapping_and_cleanning(sentences, nlp)
+    df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
 
     # 3. Cria matriz de representacao de frases por inteiros
     sentences = substituting_words_by_ids(sentences)
@@ -221,69 +223,69 @@ def train_model(nlp):
         X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
         model2.fit(X_train, y_train)
         predito = model2.predict(X_test)
-        print("Frase\t\t\tValor predito\t\tValor esperado")
+        #print("Frase\t\t\tValor predito\t\tValor esperado")
         contador = 0
         for i in range(len(val_Y)):
             if predito[i] == val_Y[i]:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                #print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
                 contador += 1
-            else:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+            # else:
+            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
         acc_arvore += contador / len(val_Y)
-        print("acc arvore de decisao: ", acc_arvore)
+        #print("acc arvore de decisao: ", acc_arvore)
 
         # Validacao
         model2 = GaussianNB()
         X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
         model2.fit(X_train, y_train)
         predito = model2.predict(X_test)
-        print("Frase\t\t\tValor predito\t\tValor esperado")
+       # print("Frase\t\t\tValor predito\t\tValor esperado")
         contador = 0
         for i in range(len(val_Y)):
             if predito[i] == val_Y[i]:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+               # print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
                 contador += 1
-            else:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+            # else:
+            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
         acc_gaussiano += contador / len(val_Y)
-        print("acc gaussiano: ", acc_gaussiano)
+        #print("acc gaussiano: ", acc_gaussiano)
 
         # Validacao
         model2 = KNeighborsClassifier(n_neighbors=3)
         X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
         model2.fit(X_train, y_train)
         predito = model2.predict(X_test)
-        print("Frase\t\t\tValor predito\t\tValor esperado")
+        #print("Frase\t\t\tValor predito\t\tValor esperado")
         contador = 0
         for i in range(len(val_Y)):
             if predito[i] == val_Y[i]:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+                #print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
                 contador += 1
-            else:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+            # else:
+            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
         acc_knn += contador / len(val_Y)
-        print("acc knn: ", acc_knn)
+        #print("acc knn: ", acc_knn)
 
         # Validacao
         model2 = svm.SVC(gamma='scale')
         X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
         model2.fit(X_train, y_train)
         predito = model2.predict(X_test)
-        print("Frase\t\t\tValor predito\t\tValor esperado")
+        #print("Frase\t\t\tValor predito\t\tValor esperado")
         contador = 0
         for i in range(len(val_Y)):
             if predito[i] == val_Y[i]:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
+               # print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
                 contador += 1
-            else:
-                print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
+            # else:
+            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
         acc_svm += contador / len(val_Y)
-        print("acc knn: ", acc_svm)
+        #print("acc knn: ", acc_svm)
         step +=1
     print("arvore: ", acc_arvore/15)
     print("gaussiano: ", acc_gaussiano / 15)
-    print(acc_knn / 15)
-    print(acc_svm / 15)
+    print("knn: ", acc_knn / 15)
+    print("svm: ", acc_svm / 15)
 
     return model, biggest_sentence
 
