@@ -42,6 +42,8 @@ from random import randrange
 from bs4 import BeautifulSoup
 import requests
 
+import collections
+
 def create_tokenizer(words, filters = '!"#$%&()*+,-./:;<=>?@[\]^_`{|}~'):
   token = Tokenizer(filters = filters)
   token.fit_on_texts(words)
@@ -56,7 +58,7 @@ def encoding_doc(token, words):
 def padding_doc(encoded_doc, max_length):
   return(pad_sequences(encoded_doc, maxlen = max_length, padding = "post"))
 
-
+##daq pra baixo eh tudo meu
 def clean(sentences):
     words = []
     for s in sentences:
@@ -113,6 +115,15 @@ def mapping_and_cleanning_1_x_1(sentences, nlp):
                 df_mapping.to_csv('mapping.csv', index=False)
         cleanned_sentences.append(sentence)
     return df_mapping, cleanned_sentences
+
+def cleanning (sentences, nlp):
+    cleanned_sentences = []
+
+    for sentence in sentences:
+        sentence = clean_sentence(sentence, nlp)
+        cleanned_sentences.append(sentence)
+
+    return cleanned_sentences
 
 def substituting_words_by_ids(sentences):
     """
@@ -178,18 +189,18 @@ def save_msg(message_to_save, message_intent):
     df_intents.at[len(df_intents['intent']) , 'intent'] = message_intent
     df_intents.to_csv('intents.csv', index=False)
 
-def train_model(nlp):
-    # 1. Pega os dados do intents.csv
-    df_intents = pd.read_csv('intents.csv')
-    sentences = df_intents["sentence"]
-    # intent = df_intents["intent"]
-    # unique_intent = list(set(intent))
-
-    # 2. Mapeia as palavras da base e retorna sentencas tratadas
-    df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
-
-    # 3. Cria matriz de representacao de frases por inteiros
-    sentences = substituting_words_by_ids(sentences)
+def train_model(nlp, sentences, intents):
+    # # 1. Pega os dados do intents.csv
+    # df_intents = pd.read_csv('intents.csv')
+    # sentences = df_intents["sentence"]
+    # # intent = df_intents["intent"]
+    # # unique_intent = list(set(intent))
+    #
+    # # 2. Mapeia as palavras da base e retorna sentencas tratadas
+    # df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
+    #
+    # # 3. Cria matriz de representacao de frases por inteiros
+    # sentences = substituting_words_by_ids(sentences)
 
     # 4. Pega tamanho da maior sentence apos o tratamento
     biggest_sentence = size_of_biggest_sentence(sentences)
@@ -199,13 +210,16 @@ def train_model(nlp):
         while len(sentence) < biggest_sentence:
             sentence.append(0)
 
+    print(sentences)
     # 6. Prepara dados para o treinamento
     data = [[], []]
-    i = 0
-    for sentence in sentences:
-        data[0].append(sentence)
-        data[1].append(df_intents.iloc[i]['intent'])
-        i += 1
+    data[0] = sentences
+    data[1] = list(intents)
+    # i = 0
+    # for sentence in sentences:
+    #     data[0].append(sentence)
+    #     data[1].append(df_intents.iloc[i]['intent'])
+    #     i += 1
     #train_X, val_X, train_Y, val_Y = train_test_split(data[0], data[1], shuffle=True, test_size=0.1)
 
     # 7. Treina o modelo
@@ -225,7 +239,7 @@ def train_model(nlp):
         predito = model2.predict(X_test)
         #print("Frase\t\t\tValor predito\t\tValor esperado")
         contador = 0
-        for i in range(len(val_Y)):
+        for i in range(0, len(val_Y)):
             if predito[i] == val_Y[i]:
                 #print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
                 contador += 1
@@ -311,3 +325,77 @@ def didYouMean(message):
         message = full_text[25:end]
         return message
     return message
+
+def document_frequency (word, sentences):
+    """Returns how many times word appeared in the sentences"""
+    count = 1 # starts with 1 to avoid 0 ocurrences
+    for sentence in sentences:
+        for w in sentence:
+            if w == word:
+                count += 1
+    return count
+
+def inverse_document_frequency(words, sentences):
+    df = {}
+    for w in words:
+        # aux = []
+        # aux.append(w)
+        # aux.append(document_frequency(w, sentences))
+        # df.append(aux)
+        df[w]=document_frequency(w, sentences)
+    idf= {}
+    for d in df:
+        # aux = []
+        # aux.append(d[0])
+        num = len(sentences)+1
+        den = df[d]
+        # aux.append(np.log(num/den) + 1)
+        # idf.append(aux)
+        idf[d] = np.log(num/den) + 1
+    return idf
+
+def term_frequency (sentence, idf):
+
+    cnt = collections.Counter()
+    for word in sentence:
+        cnt[word] += 1
+
+    i=0
+    for word in sentence:
+        sentence[i] = cnt[word] * idf[word]
+        i+=1
+
+    return sentence
+
+def tfidf_mapping(nlp):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    df_intents = pd.read_csv('intents.csv')
+    sentences = df_intents["sentence"]
+    intents = df_intents["intent"]
+
+    df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
+    words = sorted(df_mapping['word'])
+    idf = inverse_document_frequency(words, sentences)
+
+    i = 0
+    for sentence in sentences:
+        sentences[i] = term_frequency(sentence, idf)
+        i += 1
+    sentences = euclidean_norm(sentences)
+    return sentences, intents
+
+def euclidean_norm(sentences):
+    for sentence in sentences:
+        _squaresum = np.sqrt(square_sum(sentence))
+        for i in range (0, len(sentence)):
+            sentence[i] = sentence[i] / _squaresum
+            i+=1
+    return sentences
+
+def square_sum(sentence):
+    sum = 0
+    for word in sentence:
+        sum += word**2
+    return sum
+
+

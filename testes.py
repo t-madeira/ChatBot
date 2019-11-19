@@ -6,5 +6,5 @@ sentences = df_intents["sentence"]
 
 vectorizer = TfidfVectorizer(analyzer='word')
 X = vectorizer.fit_transform(sentences)
-print(vectorizer.get_feature_names())
-print(X)
+# print(vectorizer.get_feature_names())
+# print(X)
