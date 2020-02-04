@@ -44,11 +44,15 @@ server.connect((IP_address, Port))
 
 # Carregando modelo do portugues, isso demora pra cacete
 print("Carregando modelo em portugues do spacy...", end="")
-nlp = spacy.load('pt_core_news_sm')
+# nlp = spacy.load('pt_core_news_sm')
+nlp = spacy.load('en')
 print("pronto!")
 
-sentences, intents = bot_functions.tfidf_mapping(nlp)
-model = bot_functions.train_model(nlp, sentences, intents)
+df_intents = pd.read_csv('intents.csv')
+sentences = list(df_intents["sentence"])
+intents = df_intents["intent"]
+sentences = bot_functions.tfidf_mapping(nlp, sentences)
+model = bot_functions.train_models_tf_idf(nlp, sentences, intents)
 
 
 print("****TELA DO BOT****")
@@ -64,8 +68,14 @@ while True:
                 message_received = socks.recv(2048)
                 message_received = message_received.decode()[17:]
                 try:
-                    intent = bot_functions.predict_intent(message_received, nlp, biggest_sentence, model)
-                    message_to_send = bot_functions.answer(intent[0])
+                    print(message_received)
+                    # message_received = bot_functions.clean_sentence(message_received, nlp)
+                    # print(message_received)
+                    sentences.append(message_received)
+                    sentences = bot_functions.tfidf_mapping(nlp, sentences)
+                    print(sentences)
+                    intent = bot_functions.cosin_similarity(sentences, intents)
+                    message_to_send = bot_functions.answer(intent)
                 except ValueError:
                     message_received = bot_functions.didYouMean(message_received)
                     try:

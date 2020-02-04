@@ -1,42 +1,9 @@
 import socket
 import select
 import sys
-import pandas as pd
 import spacy
-import os
-
-from sklearn.naive_bayes import GaussianNB
-from sklearn.tree import DecisionTreeClassifier, export_graphviz
-
-import re
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-
-from string import punctuation
-
-import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem.lancaster import LancasterStemmer
-import nltk
-import re
-from sklearn.preprocessing import OneHotEncoder
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.utils import to_categorical
-from keras.models import Sequential, load_model
-from keras.layers import Dense, LSTM, Bidirectional, Embedding, Dropout
-from keras.callbacks import ModelCheckpoint
-
-
-
 import bot_functions
-
-from random import randrange
-
-
 
 # Coisas de conexao do chat
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,16 +11,20 @@ IP_address = "172.18.135.225"
 Port = 8081
 server.connect((IP_address, Port))
 
-
 # Carregando modelo do portugues, isso demora pra cacete
 print("Carregando modelo em portugues do spacy...", end="")
-nlp = spacy.load('pt_core_news_sm')
+# nlp = spacy.load('pt_core_news_sm')
+nlp = spacy.load('en')
 print("pronto!")
 
-#
+# Leitura dos dados
 df_answers = pd.read_csv('answers.csv')
+df_intents = pd.read_csv('intents.csv')
+sentences = df_intents["sentence"]
+intents = df_intents["intent"]
 
-model, biggest_sentence = bot_functions.train_model(nlp)
+# Treinamento
+model, biggest_sentence = bot_functions.train_models_1_x_1(nlp, sentences, intents)
 
 print("****TELA DO BOT****")
 

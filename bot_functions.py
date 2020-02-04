@@ -35,6 +35,7 @@ from keras.callbacks import ModelCheckpoint
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
 
 from random import randrange
@@ -43,6 +44,10 @@ from bs4 import BeautifulSoup
 import requests
 
 import collections
+
+from scipy import spatial
+
+from sklearn.model_selection import cross_val_score
 
 def create_tokenizer(words, filters = '!"#$%&()*+,-./:;<=>?@[\]^_`{|}~'):
   token = Tokenizer(filters = filters)
@@ -64,7 +69,6 @@ def clean(sentences):
     for s in sentences:
         clean = re.sub(r'[^ a-z A-Z 0-9]', " ", s)
         w = word_tokenize(clean)
-        # stemming
         words.append([i.lower() for i in w])
 
     return words
@@ -98,6 +102,15 @@ def clean_sentence (sentence, nlp):
                 sentence[index] = str(token.lemma_)
 
     return sentence
+
+def clean_sentences (sentences, nlp):
+    cleanned_sentences = []
+
+    for sentence in sentences:
+        sentence = clean_sentence(sentence, nlp)
+        cleanned_sentences.append(sentence)
+
+    return clanned_sentences
 
 def mapping_and_cleanning_1_x_1(sentences, nlp):
     cleanned_sentences = []
@@ -189,119 +202,90 @@ def save_msg(message_to_save, message_intent):
     df_intents.at[len(df_intents['intent']) , 'intent'] = message_intent
     df_intents.to_csv('intents.csv', index=False)
 
-def train_model(nlp, sentences, intents):
-    # # 1. Pega os dados do intents.csv
-    # df_intents = pd.read_csv('intents.csv')
-    # sentences = df_intents["sentence"]
-    # # intent = df_intents["intent"]
-    # # unique_intent = list(set(intent))
-    #
-    # # 2. Mapeia as palavras da base e retorna sentencas tratadas
-    # df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
-    #
-    # # 3. Cria matriz de representacao de frases por inteiros
-    # sentences = substituting_words_by_ids(sentences)
+def train_models_1_x_1(nlp, sentences, intents):
+    # 1. Mapeia as palavras da base e retorna sentencas tratadas
+    df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
 
-    # 4. Pega tamanho da maior sentence apos o tratamento
+    # 2. Cria matriz de representacao de frases por inteiros
+    sentences = substituting_words_by_ids(sentences)
+
+    # 3. Pega tamanho da maior sentence apos o tratamento
     biggest_sentence = size_of_biggest_sentence(sentences)
 
-    # 5. Preenche com zeros as sentences menores
+    # 4. Preenche com zeros as sentences menores
     for sentence in sentences:
         while len(sentence) < biggest_sentence:
             sentence.append(0)
 
-    print(sentences)
-    # 6. Prepara dados para o treinamento
+    # 5. Prepara dados para o treinamento
     data = [[], []]
     data[0] = sentences
     data[1] = list(intents)
-    # i = 0
-    # for sentence in sentences:
-    #     data[0].append(sentence)
-    #     data[1].append(df_intents.iloc[i]['intent'])
-    #     i += 1
-    #train_X, val_X, train_Y, val_Y = train_test_split(data[0], data[1], shuffle=True, test_size=0.1)
 
-    # 7. Treina o modelo
+    # 6. Treina o modelo
     model = DecisionTreeClassifier()
+    GaussianNB_model = GaussianNB()
+    knn_model = KNeighborsClassifier(n_neighbors=15)
+    svm_model = svm.SVC(gamma='scale')
+
     model.fit(data[0], data[1])
+    GaussianNB_model.fit(data[0], data[1])
+    knn_model.fit(data[0], data[1])
+    svm_model.fit(data[0], data[1])
+    random_forest = RandomForestClassifier()
 
-    step = 0
-    acc_arvore = 0
-    acc_gaussiano = 0
-    acc_knn = 0
-    acc_svm = 0
-    while step < 15:
-        # Validacao
-        model2 = DecisionTreeClassifier()
-        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
-        model2.fit(X_train, y_train)
-        predito = model2.predict(X_test)
-        #print("Frase\t\t\tValor predito\t\tValor esperado")
-        contador = 0
-        for i in range(0, len(val_Y)):
-            if predito[i] == val_Y[i]:
-                #print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
-                contador += 1
-            # else:
-            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
-        acc_arvore += contador / len(val_Y)
-        #print("acc arvore de decisao: ", acc_arvore)
+    scores = cross_val_score(model, data[0], data[1], cv=5)
+    print("Accuracy DecisionTreeClassifier: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-        # Validacao
-        model2 = GaussianNB()
-        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
-        model2.fit(X_train, y_train)
-        predito = model2.predict(X_test)
-       # print("Frase\t\t\tValor predito\t\tValor esperado")
-        contador = 0
-        for i in range(len(val_Y)):
-            if predito[i] == val_Y[i]:
-               # print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
-                contador += 1
-            # else:
-            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
-        acc_gaussiano += contador / len(val_Y)
-        #print("acc gaussiano: ", acc_gaussiano)
+    scores = cross_val_score(GaussianNB_model, data[0], data[1], cv=5)
+    print("Accuracy GaussianNB: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-        # Validacao
-        model2 = KNeighborsClassifier(n_neighbors=3)
-        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
-        model2.fit(X_train, y_train)
-        predito = model2.predict(X_test)
-        #print("Frase\t\t\tValor predito\t\tValor esperado")
-        contador = 0
-        for i in range(len(val_Y)):
-            if predito[i] == val_Y[i]:
-                #print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
-                contador += 1
-            # else:
-            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
-        acc_knn += contador / len(val_Y)
-        #print("acc knn: ", acc_knn)
+    scores = cross_val_score(knn_model, data[0], data[1], cv=5)
+    print("Accuracy KNeighborsClassifier: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-        # Validacao
-        model2 = svm.SVC(gamma='scale')
-        X_train, X_test, y_train, val_Y = train_test_split(data[0], data[1], test_size=0.33)
-        model2.fit(X_train, y_train)
-        predito = model2.predict(X_test)
-        #print("Frase\t\t\tValor predito\t\tValor esperado")
-        contador = 0
-        for i in range(len(val_Y)):
-            if predito[i] == val_Y[i]:
-               # print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' ' + u'\u2713')
-                contador += 1
-            # else:
-            #     print(str(X_train[i]) + "\t\t" + predito[i] + "\t\t\t" + str(val_Y[i]) + ' x')
-        acc_svm += contador / len(val_Y)
-        #print("acc knn: ", acc_svm)
-        step +=1
-    print("arvore: ", acc_arvore/15)
-    print("gaussiano: ", acc_gaussiano / 15)
-    print("knn: ", acc_knn / 15)
-    print("svm: ", acc_svm / 15)
+    scores = cross_val_score(svm_model, data[0], data[1], cv=5)
+    print("Accuracy SVM: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_score(random_forest, data[0], data[1], cv=5)
+    print("Accuracy Random Forest: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     return model, biggest_sentence
+
+def train_models_tf_idf(nlp, sentences, intents):
+    # 1. Prepara dados para o treinamento
+    data = [[], []]
+    data[0] = sentences
+    data[1] = list(intents)
+
+    # 2. Treina o modelo
+    model = DecisionTreeClassifier()
+    GaussianNB_model = GaussianNB()
+    knn_model = KNeighborsClassifier(n_neighbors=15)
+    svm_model = svm.SVC(gamma='scale')
+    random_forest = RandomForestClassifier()#max_depth=3, random_state=0
+
+    model.fit(data[0], data[1])
+    GaussianNB_model.fit(data[0], data[1])
+    knn_model.fit(data[0], data[1])
+    svm_model.fit(data[0], data[1])
+    random_forest.fit(data[0], data[1])
+
+    scores = cross_val_score(model, data[0], data[1], cv=5)
+    print("Accuracy DecisionTreeClassifier: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_score(GaussianNB_model, data[0], data[1], cv=5)
+    print("Accuracy GaussianNB: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_score(knn_model, data[0], data[1], cv=5)
+    print("Accuracy KNeighborsClassifier: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_score(svm_model, data[0], data[1], cv=5)
+    print("Accuracy SVM: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_score(random_forest, data[0], data[1], cv=5)
+    print("Accuracy Random Forest: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    return model
 
 def answer(_class):
     df_answers = pd.read_csv('answers.csv')
@@ -338,19 +322,11 @@ def document_frequency (word, sentences):
 def inverse_document_frequency(words, sentences):
     df = {}
     for w in words:
-        # aux = []
-        # aux.append(w)
-        # aux.append(document_frequency(w, sentences))
-        # df.append(aux)
         df[w]=document_frequency(w, sentences)
     idf= {}
     for d in df:
-        # aux = []
-        # aux.append(d[0])
         num = len(sentences)+1
         den = df[d]
-        # aux.append(np.log(num/den) + 1)
-        # idf.append(aux)
         idf[d] = np.log(num/den) + 1
     return idf
 
@@ -367,14 +343,11 @@ def term_frequency (sentence, idf):
 
     return sentence
 
-def tfidf_mapping(nlp):
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    df_intents = pd.read_csv('intents.csv')
-    sentences = df_intents["sentence"]
-    intents = df_intents["intent"]
+def tfidf_mapping(nlp, sentences):
 
     df_mapping, sentences = mapping_and_cleanning_1_x_1(sentences, nlp)
     words = sorted(df_mapping['word'])
+    print(sentences)
     idf = inverse_document_frequency(words, sentences)
 
     i = 0
@@ -382,7 +355,14 @@ def tfidf_mapping(nlp):
         sentences[i] = term_frequency(sentence, idf)
         i += 1
     sentences = euclidean_norm(sentences)
-    return sentences, intents
+
+    # Preenche com zeros as sentences menores
+    biggest_sentence = size_of_biggest_sentence(sentences)
+    for sentence in sentences:
+        while len(sentence) < biggest_sentence:
+            sentence.append(0)
+
+    return sentences
 
 def euclidean_norm(sentences):
     for sentence in sentences:
@@ -398,4 +378,21 @@ def square_sum(sentence):
         sum += word**2
     return sum
 
-
+def cosin_similarity(sentences, intents):
+    print (sentences)
+    print ("intents: ", intents)
+    message_received = sentences[-1]
+    sentences.pop()
+    print(sentences)
+    biggest_similarity = 0
+    index_of_biggest_similarity = 0
+    i = 0
+    for sentence in sentences:
+        similarity = 1 - spatial.distance.cosine(sentence, message_received)
+        if similarity > biggest_similarity:
+            biggest_similarity = similarity
+            index_of_biggest_similarity = i
+        i += 1
+    print(index_of_biggest_similarity)
+    print (intents[index_of_biggest_similarity])
+    return (intents[index_of_biggest_similarity])
