@@ -16,7 +16,7 @@ from warnings import simplefilter
 simplefilter(action='ignore')
 
 
-df = pd.read_csv("english_literature_base_test.txt.csv", sep = '\t')
+df = pd.read_csv("english_literature_base_test.csv", sep = '\t')
 vectorizer = CountVectorizer()
 X = vectorizer.fit_transform(df['sentence'])
 
@@ -30,12 +30,6 @@ gaussianNB__model = GaussianNB()
 knn_model = KNeighborsClassifier()
 svm_model = svm.SVC(gamma='scale')
 rf_model = RandomForestClassifier()
-#
-# # dt_model.fit(data[0], data[1])
-# gaussianNB__model.fit(data[0], data[1])
-# knn_model.fit(data[0], data[1])
-# svm_model.fit(data[0], data[1])
-# random_forest = RandomForestClassifier()
 
 from sklearn.model_selection import GridSearchCV
 
@@ -85,10 +79,7 @@ scores = cross_val_score(gaussianNB__model, data[0], data[1], scoring = 'recall_
 print("Recall GaussianNB: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 knn_model_search = GridSearchCV(knn_model, param_grid = knn_param_grid, scoring = 'recall_weighted')
-# try:
 knn_model_search.fit(data[0], data[1])
-# except ValueError:
-#     print("erro de paramentro")
 print(knn_model_search.best_params_)
 scores = cross_val_score(knn_model_search, data[0], data[1], scoring = 'recall_weighted')
 print("Recall KNeighborsClassifier: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
