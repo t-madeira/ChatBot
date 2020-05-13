@@ -3,7 +3,6 @@ from selenium.webdriver.chrome.options import Options
 import time
 import pyautogui
 
-
 def _esperar(tempo):
     i = 0
     while i < tempo:
@@ -53,12 +52,13 @@ while i < 5:
     i += 1
 
 # Gambiarra pra rolar até o fim da página
+data_primeira_conversa = "13/Sep/2016 17:47"
 i = 1
 flag = True
 while flag == True:
     try:
         if browser.find_element_by_xpath("/html/body/div[8]/div[1]/div/div/div[2]/div[2]/div/div/div[2]/table/tbody/tr[" + str(
-        i) + "]/td[5]").text != "13/Sep/2016 17:47":
+        i) + "]/td[5]").text != data_primeira_conversa:
             pyautogui.scroll(-3000)
             i += 3
     except:
