@@ -75,7 +75,7 @@ soupsieve==1.9.4
 spacy==2.2.1
 srsly==0.1.0
 tensorboard==2.0.0
-tensorflow==2.0.0
+tensorflow==2.0.3
 tensorflow-estimator==2.0.1
 termcolor==1.1.0
 thinc==7.1.1
