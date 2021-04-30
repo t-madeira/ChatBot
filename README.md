@@ -14,4 +14,4 @@ IP_address = "172.18.135.225"
 nltk.download("stopwords")
 nltk.download("punkt")
 ```
-Só precisam ser executas na primeira execução. O downlaod dos pacotes vai ser realizado e depois estas linhas podem ser comentadas/removidas
+Só precisam ser executas na primeira execução. O download dos pacotes vai ser realizado e depois estas linhas podem ser comentadas/removidas
