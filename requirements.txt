@@ -41,7 +41,7 @@ ldap3==2.5.2
 lxml==4.4.1
 Markdown==3.1.1
 matplotlib==3.1.1
-mitmproxy==4.0.4
+mitmproxy==8.0.0
 multidict==4.5.2
 murmurhash==1.0.2
 nltk==3.4.5
