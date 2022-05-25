@@ -55,7 +55,7 @@ protobuf==3.10.0
 pt-core-news-sm==2.2.0
 pyasn1==0.4.7
 pycparser==2.19
-PyJWT==1.7.1
+PyJWT==2.4.0
 pyOpenSSL==18.0.0
 pyparsing==2.2.2
 pyperclip==1.6.5
