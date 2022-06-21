@@ -45,7 +45,7 @@ mitmproxy==4.0.4
 multidict==4.5.2
 murmurhash==1.0.2
 nltk==3.4.5
-numpy==1.17.2
+numpy==1.22.0
 opt-einsum==3.1.0
 pandas==0.25.1
 passlib==1.7.1
