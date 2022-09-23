@@ -51,7 +51,7 @@ pandas==0.25.1
 passlib==1.7.1
 plac==0.9.6
 preshed==3.0.2
-protobuf==3.10.0
+protobuf==3.18.3
 pt-core-news-sm==2.2.0
 pyasn1==0.4.7
 pycparser==2.19
